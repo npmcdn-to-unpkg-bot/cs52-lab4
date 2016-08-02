@@ -6,8 +6,8 @@ import * as actions from '../actions';
 const Controls = (props) => {
   return (
     <div>
-      <button onClick={props.increment} className="btn btn-info">+</button>
       <button onClick={props.decrement} className="btn btn-warning">-</button>
+      <button onClick={props.deletePost} className="btn btn-info">Delete Post</button>
     </div>
   );
 };
