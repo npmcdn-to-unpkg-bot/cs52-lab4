@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { browserHistory } from 'react-router';
 
-const ROOT_URL = 'https://roblog-api.herokuapp.com/api';
+const ROOT_URL = 'http://localhost:9090/api';
+// const ROOT_URL = 'https://roblog-api.herokuapp.com/api';
 // const ROOT_URL = 'https://cs52-blog.herokuapp.com/api';
 const API_KEY = '?key=r_sayegh';
 
@@ -12,6 +13,9 @@ export const ActionTypes = {
   CREATE_POST: 'CREATE_POST',
   UPDATE_POST: 'UPDATE_POST',
   DELETE_POST: 'DELETE_POST',
+  AUTH_USER: 'AUTH_USER',
+  DEAUTH_USER: 'DEAUTH_USER',
+  AUTH_ERROR: 'AUTH_ERROR',
 };
 
 export function fetchPosts() {
@@ -40,11 +44,13 @@ export function createPost(post) {
     axios.post(`${ROOT_URL}/posts${API_KEY}`,
       { title: post.title,
         tags: post.tags,
-        content: post.content }).then(response => {
-          browserHistory.push('/');
-        }).catch(error => {
-          console.log('Error creating posts');
-        });
+        content: post.content },
+      { headers: { authorization: localStorage.getItem('token') } })
+      .then(response => {
+        browserHistory.push('/');
+      }).catch(error => {
+        console.log('Error creating posts');
+      });
   };
 }
 
@@ -54,19 +60,78 @@ export function updatePost(post) {
     axios.put(`${ROOT_URL}/posts/${post.id}${API_KEY}`,
       { title: post.title,
         tags: post.tags,
-        content: post.content }).then(response => {
-        }).catch(error => {
-          console.log('Error updating post');
-        });
+        content: post.content },
+      { headers: { authorization: localStorage.getItem('token') } })
+      .then(response => {
+      }).catch(error => {
+        console.log('Error updating post');
+      });
   };
 }
 
 export function deletePost(id) {
   return (dispatch) => {
-    axios.delete(`${ROOT_URL}/posts/${id}${API_KEY}`).then(response => {
+    axios.delete(`${ROOT_URL}/posts/${id}${API_KEY}`,
+      { headers: { authorization: localStorage.getItem('token') } })
+      .then(response => {
+        browserHistory.push('/');
+      }).catch(error => {
+        console.log('Error deleting post');
+      });
+  };
+}
+
+// trigger to deauth if there is error
+// can also use in your error reducer if you have one to display an error message
+export function authError(error) {
+  return {
+    type: ActionTypes.AUTH_ERROR,
+    message: error,
+  };
+}
+
+export function signinUser(email, password) {
+  // takes in an object with email and password (minimal user object)
+  // returns a thunk method that takes dispatch as an argument (just like our create post method really)
+  return (dispatch) => {
+    axios.post(`${ROOT_URL}/signin`, { email, password })
+    .then(response => {
+      dispatch({ type: ActionTypes.AUTH_USER });
+      localStorage.setItem('token', response.data.token);
       browserHistory.push('/');
-    }).catch(error => {
-      console.log('Error deleting post');
+    })
+    .catch(error => {
+      localStorage.removeItem('token');
+      dispatch(authError(`Sign In Failed: ${error.response.data}`));
     });
+  };
+}
+
+
+export function signupUser(email, password) {
+  // takes in an object with email and password (minimal user object)
+  return (dispatch) => {
+    axios.post(`${ROOT_URL}/signup`, { email, password })
+    .then(response => {
+      dispatch({ type: ActionTypes.AUTH_USER });
+      localStorage.setItem('token', response.data.token);
+      browserHistory.push('/signin');
+      console.log(response);
+    })
+    .catch(error => {
+      localStorage.removeItem('token');
+      dispatch(authError(`Error with signup: ${error.response.data}`));
+    });
+  };
+}
+
+
+// deletes token from localstorage
+// and deauths
+export function signoutUser() {
+  return (dispatch) => {
+    localStorage.removeItem('token');
+    dispatch({ type: ActionTypes.DEAUTH_USER });
+    browserHistory.push('/');
   };
 }
