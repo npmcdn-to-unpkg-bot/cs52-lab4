@@ -14,6 +14,7 @@ class Show extends Component {
       title: '',
       tags: '',
       content: '',
+      username: '',
       isEditingTitle: false,
       isEditingTags: false,
       isEditingContent: false,
@@ -34,10 +35,12 @@ class Show extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    console.log(nextProps);
     this.setState({
       title: nextProps.post.title,
       tags: nextProps.post.tags,
       content: nextProps.post.content,
+      username: nextProps.post.username.username,
     });
   }
 
@@ -129,6 +132,9 @@ class Show extends Component {
         <div className="show-container">
           <div className="title-container">
             {title}
+          </div>
+          <div>
+          By {this.state.username}
           </div>
         {tags}
           <div className="content-container">

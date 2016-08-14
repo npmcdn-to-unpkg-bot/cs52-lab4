@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { browserHistory } from 'react-router';
 
-const ROOT_URL = 'http://localhost:9090/api';
+const ROOT_URL = 'https://roblog-api-auth.herokuapp.com/api';
+// const ROOT_URL = 'http://localhost:9090/api';
 // const ROOT_URL = 'https://roblog-api.herokuapp.com/api';
 // const ROOT_URL = 'https://cs52-blog.herokuapp.com/api';
 const API_KEY = '?key=r_sayegh';
@@ -31,7 +32,6 @@ export function fetchPosts() {
 export function fetchPost(id) {
   return (dispatch) => {
     axios.get(`${ROOT_URL}/posts/${id}${API_KEY}`).then(response => {
-      // console.log(response.data);
       dispatch({ type: 'FETCH_POST', payload: response.data });
     }).catch(error => {
       console.log('Error getting post');
@@ -108,10 +108,10 @@ export function signinUser(email, password) {
 }
 
 
-export function signupUser(email, password) {
+export function signupUser(email, password, username) {
   // takes in an object with email and password (minimal user object)
   return (dispatch) => {
-    axios.post(`${ROOT_URL}/signup`, { email, password })
+    axios.post(`${ROOT_URL}/signup`, { email, password, username })
     .then(response => {
       dispatch({ type: ActionTypes.AUTH_USER });
       localStorage.setItem('token', response.data.token);
